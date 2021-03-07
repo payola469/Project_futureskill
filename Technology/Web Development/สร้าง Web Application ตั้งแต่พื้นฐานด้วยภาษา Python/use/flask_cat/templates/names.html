@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Get all names page</title>
+    </head>
+    <body>
+        <ul>
+            {% for name in names %}
+            {% if loop.index % 2 == 0 %}
+            <li><strong>{{ name }}</strong></li>
+            {% else %}
+            <li>{{name}}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Todo App V1</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row justify-content-center mt-4">
+        <h1>Todo App</h1>
+    </div>
+    <div class="row justify-content-center">
+        <form class="form-inline" method="post" action="/card/new">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="cardName" class="sr-only">Card Name</label>
+                <input type="text" class="form-control" id="cardName" name="cardName"
+                       placeholder="New card name">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Add Card</button>
+        </form>
+    </div>
+    <div class="row justify-content-start align-content-center">
+        {% for cid, data in cards.items() %}
+            <div class="col-sm-4 mb-5">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ data['name'] }}</h5>
+                        {% if data['items']|length == 0 %}
+                            <span>No item in this card</span>
+                        {% endif %}
+                        {% for itm in data['items'] %}
+                            {% set iid = itm['id'] %}
+                            <form id="form-item-{{ iid }}" class="form-check" action="/item/check" method="post">
+                                <input name="item_id" type="text" hidden value="{{ iid }}">
+                                <input
+                                        onchange="document.getElementById('form-item-{{ iid }}').submit()"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        {{ 'checked' if itm['completed'] else '' }}
+                                        id="status-{{ iid }}">
+                                <input type="hidden" value="{{ 0 if itm['completed'] else 1 }}" name="status">
+                                <label class="form-check-label" for="status_{{ iid }}">
+                                    {{ itm['name'] }}
+                                </label>
+                            </form>
+                        {% endfor %}
+                    <div class="row justify-content-center">
+                        <form class="form-inline" method="post" action="/item/new">
+                            <div class="form-group mb-2">
+                                <input type="hidden" name="card_id" value="{{ cid }}">
+                                <label for="newItem" class="sr-only">New item</label>
+                                <input type="text" class="form-control form-control-sm" id="newItem" name="name"
+                                       placeholder="new item">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary mb-2">Add</button>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+</body>
+</html>

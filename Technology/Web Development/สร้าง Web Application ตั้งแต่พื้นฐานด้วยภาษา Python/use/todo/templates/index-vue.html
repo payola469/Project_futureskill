@@ -1,0 +1,138 @@
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.19/lodash.min.js"></script>
+    <title>Todo App</title>
+</head>
+<body>
+<div id="app">
+    <v-app>
+        <v-container fluid class="pa-5 align-center">
+            <v-dialog v-model="addCardDialog" max-width="500">
+                <v-card>
+                    <v-card-title>
+                        New Card
+                    </v-card-title>
+                    <div class="pa-5">
+                        <v-text-field
+                                solo
+                                v-model="newCardName"
+                                placeholder="Name"
+                        ></v-text-field>
+                        <v-btn :disabled="newCardName===''" @click="addCard" color="primary">
+                            Confirm
+                        </v-btn>
+                        <v-btn @click="addCardDialog=false" color="error">
+                            Cancel
+                        </v-btn>
+                    </div>
+                </v-card>
+            </v-dialog>
+            <v-row class="justify-center">
+                <div class="display-2">
+                    TODO APP V1
+                </div>
+            </v-row>
+            <v-row>
+                <v-col>
+                    <v-btn
+                            depressed
+                            dark
+                            @click.prevent="() => addCardDialog=true">
+                        Add Card
+                    </v-btn>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col cols="12" sm="6" md="4" v-for="(c, cidx) in todo" :key="cidx">
+                    <v-card>
+                        <v-card-title>
+                            [[c.name]]
+                        </v-card-title>
+                        <v-list>
+                            <v-list-item-group>
+                                <v-list-item
+                                        inactive
+                                        v-for="(t, idx) in c.items"
+                                        :key="t.id">
+                                    <v-list-item-action>
+                                        <v-checkbox
+                                                :value="t.completed"
+                                                v-on:change="markComplete(cidx, t.id, !t.completed)">
+                                        </v-checkbox>
+                                    </v-list-item-action>
+                                    <v-list-item-content>
+                                        <v-list-item-title>[[t.name]]</v-list-item-title>
+                                    </v-list-item-content>
+                                </v-list-item>
+                            </v-list-item-group>
+                        </v-list>
+                        <v-card-actions>
+                            <v-text-field
+                                    placeholder="New item"
+                                    v-model="c.newItem"
+                                    hide-details
+                                    outlined>
+                            </v-text-field>
+                            <v-btn text color="dark" @click="addItem(cidx)">
+                                Add
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-app>
+</div>
+<script type="application/javascript">
+    let app = new Vue({
+        el: '#app',
+        data: {
+            newCardName: '',
+            addCardDialog: false,
+            todo: {}
+        },
+        mounted() {
+            this.fetchCards()
+        },
+        methods: {
+            fetchCards() {
+                axios.get('/card/all').then(({data}) => {
+                    this.todo = data
+                })
+            },
+            markComplete: function (cidx, idx, status) {
+                axios.post('/card/check', {
+                    card_id: cidx,
+                    item_id: idx,
+                    status
+                })
+                    .then(this.fetchCards)
+                {#this.todo[cidx].items[idx].completed = !this.todo[cidx].items[idx].completed#}
+            },
+            addCard: function () {
+                axios.post('/card/new', {name: this.newCardName})
+                .then(({data}) => {
+                    this.todo = data
+                    this.newCardName = ''
+                    this.addCardDialog = false
+                })
+            },
+            addItem: function (cidx) {
+                let name = this.todo[cidx].newItem
+                axios.post('/item/new', {card_id: cidx, name})
+                .then(({data}) => {
+                    this.todo = data
+                })
+            }
+        },
+        delimiters: ['[[', ']]'],
+        vuetify: new Vuetify()
+    })
+</script>
+</body>
